@@ -78,8 +78,8 @@ function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorCha
           </div>
         </div>
 
-        <div className="score d-flex align-items-center justify-content-center flex-grow-1">
-          <span className="display-1 fw-bold">{score}</span>
+        <div className="display-1 fw-bold d-flex align-items-center justify-content-center flex-grow-1">
+          <span className="score">{score}</span>
         </div>
 
         <div className="btn-group w-100 mt-3" role="group">
