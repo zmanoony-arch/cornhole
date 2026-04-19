@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 function getContrastVariant(hex) {
   const normalized = hex.replace('#', '').length === 3
@@ -14,15 +14,29 @@ function getContrastVariant(hex) {
 function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorChange }) {
   const [showPalette, setShowPalette] = useState(false);
   const nameInputRef = useRef(null);
+  const paletteRef = useRef(null);
   const colors = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF', '#4B0082', '#EE82EE'];
   const contrast = getContrastVariant(color);
   const outlineClass = contrast === 'light' ? 'btn-outline-light' : 'btn-outline-dark';
   const controlClass = contrast === 'light' ? 'btn-light' : 'btn-dark';
 
+  useEffect(() => {
+    if (!showPalette) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (paletteRef.current && !paletteRef.current.contains(event.target)) {
+        setShowPalette(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPalette]);
+
   return (
     <div className={`card team-card h-100 ${contrast === 'light' ? 'text-white' : 'text-dark'}`} style={{ backgroundColor: color }}>
       <div className="card-body d-flex flex-column h-100">
-        <div className="d-flex align-items-center mb-3 position-relative">
+        <div className="d-flex align-items-center mb-3 position-relative" ref={paletteRef}>
           <input
             ref={nameInputRef}
             type="text"
@@ -42,8 +56,9 @@ function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorCha
             <button
               type="button"
               className={`btn ${outlineClass} btn-sm`}
-              onClick={() => setShowPalette(!showPalette)}
+              onClick={() => setShowPalette((visible) => !visible)}
               title="Choose team color"
+              aria-expanded={showPalette}
             >
               🎨
             </button>
