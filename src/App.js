@@ -7,6 +7,8 @@ function App() {
   const [team2Score, setTeam2Score] = useState(0);
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
+  const [team1Color, setTeam1Color] = useState('#FF0000');
+  const [team2Color, setTeam2Color] = useState('#0000FF');
 
   const handleScoreChange = (team, delta) => {
     if (team === 1) {
@@ -32,8 +34,8 @@ function App() {
         <h1>Cornhole Scorekeeper</h1>
       </header>
       <div className="teams">
-        <TeamScore name={team1Name} score={team1Score} onScoreChange={(delta) => handleScoreChange(1, delta)} onNameChange={(newName) => handleNameChange(1, newName)} />
-        <TeamScore name={team2Name} score={team2Score} onScoreChange={(delta) => handleScoreChange(2, delta)} onNameChange={(newName) => handleNameChange(2, newName)} />
+        <TeamScore name={team1Name} score={team1Score} onScoreChange={(delta) => handleScoreChange(1, delta)} onNameChange={(newName) => handleNameChange(1, newName)} color={team1Color} onColorChange={setTeam1Color} />
+        <TeamScore name={team2Name} score={team2Score} onScoreChange={(delta) => handleScoreChange(2, delta)} onNameChange={(newName) => handleNameChange(2, newName)} color={team2Color} onColorChange={setTeam2Color} />
       </div>
       <button onClick={resetScores} className="reset">Reset Scores</button>
     </div>
