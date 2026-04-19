@@ -25,9 +25,11 @@
   font-size: 1.2em;
   text-align: center;
   border: none;
-  background: transparent;
+  background: white;
   margin-bottom: 10px;
   font-weight: bold;
+  padding: 8px 10px;
+  border-radius: 6px;
 }
 
 .score {
