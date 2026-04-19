@@ -1,48 +1,96 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+
+function getContrastVariant(hex) {
+  const normalized = hex.replace('#', '').length === 3
+    ? hex.replace('#', '').split('').map(c => c + c).join('')
+    : hex.replace('#', '');
+  const r = parseInt(normalized.substr(0, 2), 16);
+  const g = parseInt(normalized.substr(2, 2), 16);
+  const b = parseInt(normalized.substr(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? 'dark' : 'light';
+}
 
 function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorChange }) {
   const [showPalette, setShowPalette] = useState(false);
   const nameInputRef = useRef(null);
-  const colors = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF', '#4B0082', '#EE82EE'];
+  const paletteRef = useRef(null);
+  const colors = ['#F20D0D', '#F2A10D', '#F2F20D', '#067A06', '#0D0DF2', '#4A077B', '#E987E9'];
+  const contrast = getContrastVariant(color);
+  const outlineClass = contrast === 'light' ? 'btn-outline-light' : 'btn-outline-dark';
+  const controlClass = contrast === 'light' ? 'btn-light' : 'btn-dark';
+
+  useEffect(() => {
+    if (!showPalette) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (paletteRef.current && !paletteRef.current.contains(event.target)) {
+        setShowPalette(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPalette]);
 
   return (
-    <div className="team" style={{ backgroundColor: color }}>
-      <div className="team-name-wrapper">
-        <input
-          ref={nameInputRef}
-          type="text"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          className="team-name"
-        />
-        <span className="team-name-icon" onClick={() => nameInputRef.current?.focus()} title="Edit team name">✏️</span>
-      </div>
-      <div className="score">{score}</div>
-      <button onClick={() => onScoreChange(1)}>+</button>
-      <button onClick={() => onScoreChange(-1)}>-</button>
-      <div className="color-icon" onClick={() => setShowPalette(!showPalette)}>
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <circle cx="10" cy="10" r="9.5" fill="none" stroke="black" stroke-width="4"/>
-          <path d="M10,10 L20,10 A10,10 0 0,1 16.18,17.86 Z" fill="#FF0000"/>
-          <path d="M10,10 L16.18,17.86 A10,10 0 0,1 6.81,19.51 Z" fill="#FFA500"/>
-          <path d="M10,10 L6.81,19.51 A10,10 0 0,1 1.81,16.88 Z" fill="#FFFF00"/>
-          <path d="M10,10 L1.81,16.88 A10,10 0 0,1 1.81,4.12 Z" fill="#008000"/>
-          <path d="M10,10 L1.81,4.12 A10,10 0 0,1 6.81,0.49 Z" fill="#0000FF"/>
-          <path d="M10,10 L6.81,0.49 A10,10 0 0,1 16.18,2.14 Z" fill="#4B0082"/>
-          <path d="M10,10 L16.18,2.14 A10,10 0 0,1 20,10 Z" fill="#EE82EE"/>
-        </svg>
-      </div>
-      {showPalette && (
-        <div className="color-palette">
-          {colors.map(c => (
+    <div className={`card team-card h-100 ${contrast === 'light' ? 'text-white' : 'text-dark'}`} style={{ backgroundColor: color }}>
+      <div className="card-body d-flex flex-column h-100">
+        <div className="d-flex align-items-center mb-3 position-relative" ref={paletteRef}>
+          <input
+            ref={nameInputRef}
+            type="text"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            className="form-control me-2"
+          />
+          <button
+            type="button"
+            className={`btn ${outlineClass} btn-sm me-2`}
+            onClick={() => nameInputRef.current?.focus()}
+            title="Edit team name"
+          >
+            ✏️
+          </button>
+          <div className="position-relative">
             <button
-              key={c}
-              style={{ backgroundColor: c }}
-              onClick={() => { onColorChange(c); setShowPalette(false); }}
-            />
-          ))}
+              type="button"
+              className={`btn ${outlineClass} btn-sm`}
+              onClick={() => setShowPalette((visible) => !visible)}
+              title="Choose team color"
+              aria-expanded={showPalette}
+            >
+              🎨
+            </button>
+            {showPalette && (
+              <div className="color-palette position-absolute shadow-sm rounded bg-white p-2">
+                {colors.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="color-button"
+                    style={{ backgroundColor: c }}
+                    onClick={() => { onColorChange(c); setShowPalette(false); }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+
+        <div className="score d-flex align-items-center justify-content-center flex-grow-1">
+          <span className="display-4 fw-bold">{score}</span>
+        </div>
+
+        <div className="btn-group w-100 mt-3" role="group">
+          <button type="button" className={`btn ${controlClass} btn-lg border border-dark`} onClick={() => onScoreChange(1)}>
+            +
+          </button>
+          <button type="button" className={`btn ${controlClass} btn-lg border border-dark`} onClick={() => onScoreChange(-1)}>
+            -
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
