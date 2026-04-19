@@ -15,7 +15,7 @@ function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorCha
   const [showPalette, setShowPalette] = useState(false);
   const nameInputRef = useRef(null);
   const paletteRef = useRef(null);
-  const colors = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF', '#4B0082', '#EE82EE'];
+  const colors = ['#F20D0D', '#F2A10D', '#F2F20D', '#067A06', '#0D0DF2', '#4A077B', '#E987E9'];
   const contrast = getContrastVariant(color);
   const outlineClass = contrast === 'light' ? 'btn-outline-light' : 'btn-outline-dark';
   const controlClass = contrast === 'light' ? 'btn-light' : 'btn-dark';

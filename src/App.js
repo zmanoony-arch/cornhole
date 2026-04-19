@@ -7,8 +7,8 @@ function App() {
   const [team2Score, setTeam2Score] = useState(0);
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
-  const [team1Color, setTeam1Color] = useState('#FF0000');
-  const [team2Color, setTeam2Color] = useState('#0000FF');
+  const [team1Color, setTeam1Color] = useState('#F20D0D');
+  const [team2Color, setTeam2Color] = useState('#0D0DF2');
 
   const handleScoreChange = (team, delta) => {
     if (team === 1) {
