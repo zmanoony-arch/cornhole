@@ -1,5 +1,7 @@
 .App {
   min-height: 100dvh;
+  max-height: 100dvh;
+  max-width: 100dvw;
   display: flex;
   flex-direction: column;
 }
@@ -16,8 +18,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
 }
 
 .App-footer {
@@ -57,5 +57,5 @@
 }
 
 .score {
-  max-height: 40dvh;
+  max-height: 80dvh;
 }

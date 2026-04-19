@@ -31,14 +31,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div className="container h-100 d-flex align-items-center justify-content-center">
+        <div className="container-fluid h-100 d-flex align-items-center justify-content-center p-0">
           <h1 className="h3 mb-0">Cornhole Scorekeeper</h1>
         </div>
       </header>
 
-      <main className="main-content container d-flex flex-column justify-content-center">
-        <div className="row gx-3 gy-4 justify-content-center">
-          <div className="col-12 col-md-8">
+      <main className="main-content h-100 container-fluid d-flex flex-column justify-content-center p-0">
+        <div className="row gx-1 gy-1 justify-content-center m-0 w-100">
+          <div className="col-12 col-md-6">
             <TeamScore
               name={team1Name}
               score={team1Score}
@@ -48,7 +48,7 @@ function App() {
               onColorChange={setTeam1Color}
             />
           </div>
-          <div className="col-12 col-md-8">
+          <div className="col-12 col-md-6">
             <TeamScore
               name={team2Name}
               score={team2Score}
@@ -61,8 +61,8 @@ function App() {
         </div>
       </main>
 
-      <footer className="App-footer d-flex align-items-center justify-content-center">
-        <button type="button" onClick={resetScores} className="btn btn-danger btn-lg px-4">
+      <footer className="App-footer content-fluid d-flex align-items-center justify-content-center p-0">
+        <button type="button" onClick={resetScores} className="btn btn-danger btn-lg px-1 w-100">
           Reset Scores
         </button>
       </footer>
