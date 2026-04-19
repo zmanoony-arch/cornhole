@@ -83,10 +83,10 @@ function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorCha
         </div>
 
         <div className="btn-group w-100 mt-3" role="group">
-          <button type="button" className={`btn ${controlClass} btn-lg`} onClick={() => onScoreChange(1)}>
+          <button type="button" className={`btn ${controlClass} btn-lg border border-dark`} onClick={() => onScoreChange(1)}>
             +
           </button>
-          <button type="button" className={`btn ${controlClass} btn-lg`} onClick={() => onScoreChange(-1)}>
+          <button type="button" className={`btn ${controlClass} btn-lg border border-dark`} onClick={() => onScoreChange(-1)}>
             -
           </button>
         </div>
