@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/cornhole/static/css/main.f3186749.css",
+    "main.js": "/cornhole/static/js/main.c5c5e946.js",
+    "index.html": "/cornhole/index.html",
+    "main.f3186749.css.map": "/cornhole/static/css/main.f3186749.css.map",
+    "main.c5c5e946.js.map": "/cornhole/static/js/main.c5c5e946.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f3186749.css",
+    "static/js/main.c5c5e946.js"
+  ]
+}
