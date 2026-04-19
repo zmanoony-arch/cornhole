@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/cornhole/static/css/main.9889a8e1.css",
-    "main.js": "/cornhole/static/js/main.f46d99db.js",
+    "main.css": "/cornhole/static/css/main.5f51d1d4.css",
+    "main.js": "/cornhole/static/js/main.531161c9.js",
     "index.html": "/cornhole/index.html",
-    "main.9889a8e1.css.map": "/cornhole/static/css/main.9889a8e1.css.map",
-    "main.f46d99db.js.map": "/cornhole/static/js/main.f46d99db.js.map"
+    "main.5f51d1d4.css.map": "/cornhole/static/css/main.5f51d1d4.css.map",
+    "main.531161c9.js.map": "/cornhole/static/js/main.531161c9.js.map"
   },
   "entrypoints": [
-    "static/css/main.9889a8e1.css",
-    "static/js/main.f46d99db.js"
+    "static/css/main.5f51d1d4.css",
+    "static/js/main.531161c9.js"
   ]
 }
