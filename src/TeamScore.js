@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 function TeamScore({ name, score, onScoreChange, onNameChange, color, onColorChange }) {
   const [showPalette, setShowPalette] = useState(false);
+  const nameInputRef = useRef(null);
   const colors = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF', '#4B0082', '#EE82EE'];
 
   return (
     <div className="team" style={{ backgroundColor: color }}>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => onNameChange(e.target.value)}
-        className="team-name"
-      />
+      <div className="team-name-wrapper">
+        <input
+          ref={nameInputRef}
+          type="text"
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          className="team-name"
+        />
+        <span className="team-name-icon" onClick={() => nameInputRef.current?.focus()} title="Edit team name">✏️</span>
+      </div>
       <div className="score">{score}</div>
       <button onClick={() => onScoreChange(1)}>+</button>
       <button onClick={() => onScoreChange(-1)}>-</button>
