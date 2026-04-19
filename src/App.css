@@ -22,12 +22,12 @@
 
 .App-footer {
   flex: 0 0 10dvh;
-  padding: 0;
 }
 
 .team-card {
   border: 1px solid rgba(0, 0, 0, 0.125);
   overflow: hidden;
+  min-height: 40dvh;
 }
 
 .color-palette {
@@ -57,5 +57,5 @@
 }
 
 .score {
-  max-height: 80dvh;
+  min-height: 10dvh;
 }
