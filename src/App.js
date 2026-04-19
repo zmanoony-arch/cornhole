@@ -31,13 +31,41 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Cornhole Scorekeeper</h1>
+        <div className="container h-100 d-flex align-items-center justify-content-center">
+          <h1 className="h3 mb-0">Cornhole Scorekeeper</h1>
+        </div>
       </header>
-      <div className="teams">
-        <TeamScore name={team1Name} score={team1Score} onScoreChange={(delta) => handleScoreChange(1, delta)} onNameChange={(newName) => handleNameChange(1, newName)} color={team1Color} onColorChange={setTeam1Color} />
-        <TeamScore name={team2Name} score={team2Score} onScoreChange={(delta) => handleScoreChange(2, delta)} onNameChange={(newName) => handleNameChange(2, newName)} color={team2Color} onColorChange={setTeam2Color} />
-      </div>
-      <button onClick={resetScores} className="reset">Reset Scores</button>
+
+      <main className="main-content container d-flex flex-column justify-content-center">
+        <div className="row gx-3 gy-4 justify-content-center">
+          <div className="col-12 col-md-8">
+            <TeamScore
+              name={team1Name}
+              score={team1Score}
+              onScoreChange={(delta) => handleScoreChange(1, delta)}
+              onNameChange={(newName) => handleNameChange(1, newName)}
+              color={team1Color}
+              onColorChange={setTeam1Color}
+            />
+          </div>
+          <div className="col-12 col-md-8">
+            <TeamScore
+              name={team2Name}
+              score={team2Score}
+              onScoreChange={(delta) => handleScoreChange(2, delta)}
+              onNameChange={(newName) => handleNameChange(2, newName)}
+              color={team2Color}
+              onColorChange={setTeam2Color}
+            />
+          </div>
+        </div>
+      </main>
+
+      <footer className="App-footer d-flex align-items-center justify-content-center">
+        <button type="button" onClick={resetScores} className="btn btn-danger btn-lg px-4">
+          Reset Scores
+        </button>
+      </footer>
     </div>
   );
 }
