@@ -167,7 +167,7 @@ export default function Tournament() {
     const winners = matchesData.map(m => m.winner_id);
 
     // 🟡 ODD CHECK → trigger modal instead of prompt
-    if (winners.length % 2 !== 0) {
+    if (winners.length > 1 && winners.length % 2 !== 0) {
       setByeCandidates(winners);
       setPendingRoundData({ tournamentId, round });
       setShowByeModal(true);
