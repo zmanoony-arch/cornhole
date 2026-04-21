@@ -17,7 +17,7 @@ export default function Tournament() {
   const [matches, setMatches] = useState([]);
   const [showBracket, setShowBracket] = useState(false);
 
-  const hasBracket = matches.length > 0;
+  const hasBracket = selectedTournament && matches.length > 0;
 
   // Fetch tournaments
   const fetchTournaments = async () => {
@@ -44,6 +44,8 @@ export default function Tournament() {
     if (data) setTeams(data);
 
     await fetchMatches(t.id);
+
+    setShowBracket(true);
   };
 
   // Add team
@@ -90,8 +92,7 @@ export default function Tournament() {
   };
 
   // Fetch matches
-  const fetchMatches = async () => {
-    if (!selectedTournament) return;
+  const fetchMatches = async (tournamentId) => {
     const { data } = await supabase
       .from('matches')
       .select(`
@@ -99,10 +100,12 @@ export default function Tournament() {
         team1:team1_id(name),
         team2:team2_id(name)
       `)
-      .eq('tournament_id', selectedTournament.id)
+      .eq('tournament_id', tournamentId)
       .order('round', { ascending: true });
 
-    if (data) setMatches(data);
+    if (data) {
+      setMatches(data);
+    }
   };
 
   // Delete bracket
@@ -177,6 +180,12 @@ export default function Tournament() {
   useEffect(() => {
     fetchTournaments();
   }, []);
+
+  useEffect(() => {
+    if (selectedTournament?.id) {
+      fetchMatches(selectedTournament.id);
+    }
+  }, [selectedTournament]);
 
   return (
     <div className="container py-4">
