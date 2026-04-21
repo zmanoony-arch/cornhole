@@ -16,6 +16,9 @@ export default function Tournament() {
   const [newTeam, setNewTeam] = useState('');
   const [matches, setMatches] = useState([]);
   const [showBracket, setShowBracket] = useState(false);
+  const [byeCandidates, setByeCandidates] = useState([]);
+  const [showByeModal, setShowByeModal] = useState(false);
+  const [pendingRoundData, setPendingRoundData] = useState(null);
 
   const hasBracket = selectedTournament && matches.length > 0;
 
@@ -150,42 +153,82 @@ export default function Tournament() {
 
   // Advance round if all matches in current round are finished
   const advanceRound = async (tournamentId, round) => {
-    // Get all matches in this round
-    const { data: matches } = await supabase
+    const { data: matchesData } = await supabase
       .from('matches')
       .select('*')
       .eq('tournament_id', tournamentId)
       .eq('round', round);
 
-    if (!matches || matches.length === 0) return;
+    if (!matchesData) return;
 
-    // If not all matches are finished → stop
-    const unfinished = matches.filter(m => !m.winner_id);
+    const unfinished = matchesData.filter(m => !m.winner_id);
     if (unfinished.length > 0) return;
 
-    // Collect winners
-    const winners = matches.map(m => m.winner_id);
+    const winners = matchesData.map(m => m.winner_id);
 
-    // If only 1 winner → tournament over
-    if (winners.length === 1) return;
+    // 🟡 ODD CHECK → trigger modal instead of prompt
+    if (winners.length % 2 !== 0) {
+      setByeCandidates(winners);
+      setPendingRoundData({ tournamentId, round });
+      setShowByeModal(true);
+      return;
+    }
 
-    // Create next round matches
-    const nextRound = [];
+    createNextRound(tournamentId, round, winners);
+  };
 
-    for (let i = 0; i < winners.length; i += 2) {
-      if (winners[i + 1]) {
-        nextRound.push({
+  const createNextRound = async (tournamentId, round, winners, byeTeamId = null) => {
+    let pool = [...winners];
+
+    const matches = [];
+
+    // remove bye team if selected
+    if (byeTeamId) {
+      pool = pool.filter(id => id !== byeTeamId);
+
+      // auto-insert bye advancement match
+      matches.push({
+        tournament_id: tournamentId,
+        team1_id: byeTeamId,
+        team2_id: null,
+        winner_id: byeTeamId,
+        round: round + 1
+      });
+    }
+
+    for (let i = 0; i < pool.length; i += 2) {
+      if (pool[i + 1]) {
+        matches.push({
           tournament_id: tournamentId,
-          team1_id: winners[i],
-          team2_id: winners[i + 1],
+          team1_id: pool[i],
+          team2_id: pool[i + 1],
           round: round + 1
         });
       }
     }
 
-    await supabase.from('matches').insert(nextRound);
+    await supabase.from('matches').insert(matches);
 
     await fetchMatches(tournamentId);
+  };
+
+  const handleSelectBye = async (teamId) => {
+    setShowByeModal(false);
+
+    const { tournamentId, round } = pendingRoundData;
+
+    const { data: matchesData } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .eq('round', round);
+
+    const winners = matchesData.map(m => m.winner_id);
+
+    await createNextRound(tournamentId, round, winners, teamId);
+
+    setByeCandidates([]);
+    setPendingRoundData(null);
   };
 
   useEffect(() => {
@@ -301,15 +344,20 @@ export default function Tournament() {
                   <span>
                     {m.team1_score} - {m.team2_score}
                   </span>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => playMatch(m)}
-                  >
-                    Play Match
-                  </button>
+                  
                   <div className="d-flex gap-2">
                     <button
-                      className="btn btn-sm btn-outline-success"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => playMatch(m)}
+                    >
+                      Play Match
+                    </button>
+                    <button
+                      className={`btn btn-sm ${
+                        m.winner_id === m.team1_id
+                          ? "btn-success"
+                          : "btn-outline-success"
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setWinner(m, m.team1_id);
@@ -319,7 +367,11 @@ export default function Tournament() {
                     </button>
 
                     <button
-                      className="btn btn-sm btn-outline-success"
+                      className={`btn btn-sm ${
+                        m.winner_id === m.team2_id
+                          ? "btn-success"
+                          : "btn-outline-success"
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setWinner(m, m.team2_id);
@@ -333,6 +385,42 @@ export default function Tournament() {
             </ul>
           )}
         </>
+      )}
+      {showByeModal && (
+        <div className="modal d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+
+              <div className="modal-header">
+                <h5 className="modal-title">Select Bye Team</h5>
+              </div>
+
+              <div className="modal-body">
+                <p>Odd number of teams detected. Choose one team to advance:</p>
+
+                <ul className="list-group">
+                  {byeCandidates.map((teamId) => {
+                    const team =
+                      teams.find(t => t.id === teamId) ||
+                      matches.flatMap(m => [m.team1, m.team2]).find(t => t?.id === teamId);
+
+                    return (
+                      <li
+                        key={teamId}
+                        className="list-group-item list-group-item-action"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleSelectBye(teamId)}
+                      >
+                        {team?.name || "Unknown Team"}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
