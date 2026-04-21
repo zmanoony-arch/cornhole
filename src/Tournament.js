@@ -175,24 +175,36 @@ export default function Tournament() {
 
     if (!matchesData) return;
 
+    if (matchesData.length === 1 && matchesData[0].winner_id) {
+      console.log("🏆 Tournament finished");
+      return;
+    }
+
     const unfinished = matchesData.filter(m => !m.winner_id);
     if (unfinished.length > 0) return;
 
-    const winners = matchesData.map(m => m.winner_id);
+    const winners = matchesData
+    .filter(m => m.winner_id)
+    .map(m => m.winner_id);
 
-    // 🟡 ODD CHECK → trigger modal instead of prompt
-    if (winners.length > 1 && winners.length % 2 !== 0) {
+    if (winners.length === 1) {
+      console.log("Champion determined:", winners[0]);
+      return;
+    }
+
+    if (winners.length % 2 !== 0) {
       setByeCandidates(winners);
       setPendingRoundData({ tournamentId, round });
       setShowByeModal(true);
       return;
     }
 
-    const nextRound = round + 1;
+    const nextRound = await getNextRound(tournamentId);
     createNextRound(tournamentId, nextRound, winners);
   };
 
   const createNextRound = async (tournamentId, nextRound, winners, byeTeamId = null) => {
+    if (winners.length < 2) return;
     let pool = [...winners];
 
     const matches = [];
@@ -227,10 +239,16 @@ export default function Tournament() {
     await fetchMatches(tournamentId);
   };
 
-  // const getNextRound = (matchesData) => {
-  //   const maxRound = Math.max(...matchesData.map(m => m.round || 1));
-  //   return maxRound + 1;
-  // };
+  const getNextRound = async (tournamentId) => {
+    const { data } = await supabase
+      .from('matches')
+      .select('round')
+      .eq('tournament_id', tournamentId);
+
+    if (!data || data.length === 0) return 1;
+
+    return Math.max(...data.map(m => m.round || 1)) + 1;
+  };
 
   const handleSelectBye = async (teamId) => {
     setShowByeModal(false);
@@ -248,8 +266,7 @@ export default function Tournament() {
 
     let pool = [...baseTeams].filter(id => id !== teamId);
 
-    const baseRound = initial ? 1 : getCurrentRound(tournamentId);
-    const nextRound = baseRound + 1;
+    const nextRound = await getNextRound(tournamentId);
 
     const newMatches = [];
 
