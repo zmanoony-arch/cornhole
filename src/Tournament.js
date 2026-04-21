@@ -108,6 +108,17 @@ export default function Tournament() {
     }
   };
 
+  // Play match
+  const playMatch = (m) => {
+    navigate('/cornhole', {
+      state: {
+        matchId: m.id,
+        team1: m.team1,
+        team2: m.team2
+      }
+    });
+  };
+
   // Delete bracket
   const deleteBracket = async () => {
     if (!selectedTournament) return;
@@ -281,14 +292,6 @@ export default function Tournament() {
                 <li
                   key={m.id}
                   className="list-group-item d-flex justify-content-between align-items-center"
-                  onClick={() =>
-                  navigate('/cornhole', {
-                    state: {
-                      matchId: m.id,
-                      team1: m.team1,
-                      team2: m.team2
-                    }
-                  })}
                 style={{ cursor: 'pointer' }}
                 >
                   <span>
@@ -298,6 +301,33 @@ export default function Tournament() {
                   <span>
                     {m.team1_score} - {m.team2_score}
                   </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => playMatch(m)}
+                  >
+                    Play Match
+                  </button>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-sm btn-outline-success"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setWinner(m, m.team1_id);
+                      }}
+                    >
+                      {m.team1?.name} Wins
+                    </button>
+
+                    <button
+                      className="btn btn-sm btn-outline-success"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setWinner(m, m.team2_id);
+                      }}
+                    >
+                      {m.team2?.name} Wins
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
