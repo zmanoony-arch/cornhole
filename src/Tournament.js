@@ -24,7 +24,7 @@ export default function Tournament() {
 
   // Fetch tournaments
   const fetchTournaments = async () => {
-    const { data, error } = await supabase.from('tournaments').select('*');
+    const { data } = await supabase.from('tournaments').select('*');
     if (data) setTournaments(data);
   };
 
@@ -70,20 +70,34 @@ export default function Tournament() {
 
     const shuffled = [...teams].sort(() => Math.random() - 0.5);
 
-    const newMatches = [];
+    const teamIds = shuffled.map(t => t.id);
 
-    for (let i = 0; i < shuffled.length; i += 2) {
-      if (shuffled[i + 1]) {
-        newMatches.push({
+    // 🟡 ODD CHECK AT START
+    if (teamIds.length > 1 && teamIds.length % 2 !== 0) {
+      setByeCandidates(teamIds);
+      setPendingRoundData({
+        tournamentId: selectedTournament.id,
+        round: 1,
+        initial: true // 👈 important flag
+      });
+      setShowByeModal(true);
+      return;
+    }
+
+    const matches = [];
+
+    for (let i = 0; i < teamIds.length; i += 2) {
+      if (teamIds[i + 1]) {
+        matches.push({
           tournament_id: selectedTournament.id,
-          team1_id: shuffled[i].id,
-          team2_id: shuffled[i + 1].id,
+          team1_id: teamIds[i],
+          team2_id: teamIds[i + 1],
           round: 1
         });
       }
     }
 
-    await supabase.from('matches').insert(newMatches);
+    await supabase.from('matches').insert(matches);
 
     await fetchMatches(selectedTournament.id);
   };
@@ -174,10 +188,11 @@ export default function Tournament() {
       return;
     }
 
-    createNextRound(tournamentId, round, winners);
+    const nextRound = round + 1;
+    createNextRound(tournamentId, nextRound, winners);
   };
 
-  const createNextRound = async (tournamentId, round, winners, byeTeamId = null) => {
+  const createNextRound = async (tournamentId, nextRound, winners, byeTeamId = null) => {
     let pool = [...winners];
 
     const matches = [];
@@ -192,7 +207,7 @@ export default function Tournament() {
         team1_id: byeTeamId,
         team2_id: null,
         winner_id: byeTeamId,
-        round: round + 1
+        round: nextRound
       });
     }
 
@@ -202,7 +217,7 @@ export default function Tournament() {
           tournament_id: tournamentId,
           team1_id: pool[i],
           team2_id: pool[i + 1],
-          round: round + 1
+          round: nextRound
         });
       }
     }
@@ -212,23 +227,70 @@ export default function Tournament() {
     await fetchMatches(tournamentId);
   };
 
+  // const getNextRound = (matchesData) => {
+  //   const maxRound = Math.max(...matchesData.map(m => m.round || 1));
+  //   return maxRound + 1;
+  // };
+
   const handleSelectBye = async (teamId) => {
     setShowByeModal(false);
 
-    const { tournamentId, round } = pendingRoundData;
+    const { tournamentId, initial } = pendingRoundData;
 
-    const { data: matchesData } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('tournament_id', tournamentId)
-      .eq('round', round);
+    const baseTeams = initial
+      ? byeCandidates
+      : (await supabase
+          .from('matches')
+          .select('*')
+          .eq('tournament_id', tournamentId)
+          .eq('round', 1)
+        ).data.map(m => m.winner_id);
 
-    const winners = matchesData.map(m => m.winner_id);
+    let pool = [...baseTeams].filter(id => id !== teamId);
 
-    await createNextRound(tournamentId, round, winners, teamId);
+    const baseRound = initial ? 1 : getCurrentRound(tournamentId);
+    const nextRound = baseRound + 1;
+
+    const newMatches = [];
+
+    // normal matches for NEXT round
+    for (let i = 0; i < pool.length; i += 2) {
+      if (pool[i + 1]) {
+        newMatches.push({
+          tournament_id: tournamentId,
+          team1_id: pool[i],
+          team2_id: pool[i + 1],
+          round: nextRound
+        });
+      }
+    }
+
+    // bye match (auto-advance)
+    newMatches.push({
+      tournament_id: tournamentId,
+      team1_id: teamId,
+      team2_id: null,
+      winner_id: teamId,
+      round: nextRound
+    });
+
+    await supabase.from('matches').insert(newMatches);
+
+    await fetchMatches(tournamentId);
 
     setByeCandidates([]);
     setPendingRoundData(null);
+  };
+
+  const getCurrentRound = async (tournamentId) => {
+    const { data } = await supabase
+      .from('matches')
+      .select('round')
+      .eq('tournament_id', tournamentId);
+
+    if (!data || data.length === 0) return 1;
+
+    return Math.max(...data.map(m => m.round || 1));
   };
 
   useEffect(() => {
@@ -338,7 +400,13 @@ export default function Tournament() {
                 style={{ cursor: 'pointer' }}
                 >
                   <span>
-                    {m.team1?.name} vs {m.team2?.name}
+                    <strong>Round {m.round}:</strong>{" "}
+                    {m.team1?.name} vs{" "}
+                    {m.team2_id === null ? (
+                      <span className="text-muted">BYE</span>
+                    ) : (
+                      m.team2?.name
+                    )}
                   </span>
 
                   <span>
@@ -349,6 +417,7 @@ export default function Tournament() {
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => playMatch(m)}
+                      disabled={m.team2_id === null}
                     >
                       Play Match
                     </button>
@@ -362,6 +431,7 @@ export default function Tournament() {
                         e.stopPropagation();
                         setWinner(m, m.team1_id);
                       }}
+                      disabled={m.team2_id === null}
                     >
                       {m.team1?.name} Wins
                     </button>
@@ -376,6 +446,7 @@ export default function Tournament() {
                         e.stopPropagation();
                         setWinner(m, m.team2_id);
                       }}
+                      disabled={m.team2_id === null}
                     >
                       {m.team2?.name} Wins
                     </button>
